@@ -170,7 +170,7 @@ df_calendarDim.to_sql('calendar', conn, index=False)
 
 qry = '''
     select  
-        Schedule_id, Course_id, Course_name, Attendance_id, Student_id, Attend_dt,
+        Schedule_id, Course_id, Course_name, Attendance_id, Student_id, Attend_dt,"Course_days",
         calendar.Academic_year, calendar.Semester_id, Week_id, Week_start_dt, Week_end_dt
     from
         result3 join calendar on
@@ -180,12 +180,14 @@ qry = '''
     '''
 
 attendance_yes = pd.read_sql_query(qry, conn)    
+attendance_yes.to_csv (pathDatamart + 'attendance_yes.csv', index=False)
 
 result4 = pd.merge(df_enrollmentFact, df_calendarDim, on=["Academic_year", "Semester_id"])
 result5 = pd.merge(result4, df_scheduleDim, on=["Schedule_id"])
 total_attendance = pd.merge(result5, df_courseDim, on=["Course_id"])
+total_attendance.to_csv (pathDatamart + 'total_attendance.csv', index=False)
 
-final_dataset = pd.merge(total_attendance, attendance_yes[["Schedule_id", "Student_id", "Academic_year", "Semester_id", "Week_id", "Course_id","Attend_dt"]], how="left", on=["Schedule_id", "Student_id", "Academic_year", "Semester_id", "Week_id", "Course_id"])
+final_dataset = pd.merge(total_attendance, attendance_yes[["Schedule_id", "Student_id", "Academic_year", "Semester_id", "Week_id", "Course_id","Attend_dt", "Course_days"]], how="left", on=["Schedule_id", "Student_id", "Academic_year", "Semester_id", "Week_id", "Course_id", "Course_days"])
 print(final_dataset.head(3))
 print('write to: ' + pathDatamart + 'attendance_datamart.csv')
 final_dataset.to_csv (pathDatamart + 'attendance_datamart.csv', index=False)
